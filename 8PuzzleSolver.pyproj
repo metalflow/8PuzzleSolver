@@ -21,9 +21,11 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Puzz8.pyw" />
     <Compile Include="_8PuzzleSolver.py" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="CS 441 541 Programming 1 Winter 2023.pdf" />
     <Content Include="input.txt" />
     <Content Include="out.txt" />
     <Content Include="output.txt" />
