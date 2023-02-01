@@ -50,8 +50,8 @@ def ValidateString(StringToExamine):
     return 0
 
 #initialize variables
-outputfilename='output.txt'
-inputfilename='input.txt'
+outputfilename="output.txt"
+inputfilename="input.txt"
 
 #import and handle comand line arguments
 for arg in sys.argv:
@@ -72,37 +72,28 @@ for arg in sys.argv:
 if outputfilename=='output.txt':
     outputfilename = input("Leave blank to use default output file 'output.txt', type 'none' to not use an output file, or enter a filename to record this session's results:")
 if inputfilename=='input.txt':
-    inputfilename = input("Leave blank to use default input file 'input.txt', type 'file:<filename>' to use a file, or type 'none' enter a string to examine:")
+    inputfilename = input("Leave blank to use default input file 'input.txt', type 'file:<filename>' to use a file, or type 'none' to enter a string to examine:")
 
 #validate User Queries
 if inputfilename=="":
-    try: inputfile = open(inputfilename,"rt")
+    try: inputfile = open("input.txt","rt")
     except IOError as e:
         sys.exit("I/O error({0}): {1}".format(e.errno, e.strerror))
     except: #handle other exceptions such as attribute errors
         sys.exit("Unexpected error:", sys.exc_info()[0])
+    userInput=inputfile.readline()
 elif inputfilename[0:5] == "file:":
-    inputfilename = UserInput.split(":")[1]
+    inputfilename = userInput.split(":")[1]
     try: inputfile = open(inputfilename,"rt")
     except IOError as e:
         sys.exit("I/O error({0}): {1}".format(e.errno, e.strerror))
     except: #handle other exceptions such as attribute errors
         sys.exit("Unexpected error:", sys.exc_info()[0])
+    userInput=inputfile.readline()
 elif inputfilename=="none":
-    UserInput=""
-    inputfilename=""
+    userInput = input("please enter a string in the for of 'SearchType:b,1,2,3,4,5,6,7,8':")
 else:
-    if len(UserInput.split(":")) != 2:
-        print(UserInput+" is not an understood method for examining a string.")
-        print("Please enter a string in the format method:string where the only supported methods are best-first and A*.")
-        print("The strings are of the format #,#,#,#,#,#,#,# where # is some combination of 1-8 and b where each is only used once.  For instance '4,5,b,6,1,8,7,3'.")
-    else:
-        if UserInput.split(":")[0] != "best-first" and UserInput.split(":")[0] != "A*":
-            print(UserInput.split(":")[0]+" is not an understood method for examining a string.")
-            print("Please enter a string in the format method:string where the only supported methods are best-first and A*.")
-        if ValidateString(UserInput.split(":")[1]):
-            print(UserInput.split(":",2)+" is not a correct string to examine")
-            print("The strings are of the format #,#,#,#,#,#,#,# where # is some combination of 1-8 and b where each is only used once.  For instance '4,5,b,6,1,8,7,3'.")
+    sys.exit("Invalid Input selection")
 
 if outputfilename=="none":
     outputfilename=""
@@ -125,28 +116,19 @@ else:
 
 #condition UserInput into useful variables
 
-    SearchType = UserInput.split(":")[0]
-    if SearchType != "best-first" and SearchType != "A*":
-         sys.exit("Please enter a string in the format method:string where the only supported methods are best-first and A*.")
-
-    Puzzle = UserInput.split(":")[1].split(",")
-    if len(Puzzle) != 9 and len(Puzzle) != 16:
-        sys.exit("Please enter a puzzle of size 9 or 16 (e.g. b,1,2,3,4,5,6,7,8)")
-    elif len(Puzzle) == 9:
-        checkCharList = ['b',1,2,3,4,5,6,7,8]
-        Puzz8.Puzzle8(SearchType,Puzzle).Solve()
-    elif len(Puzzle) == 16:
-        checkCharList = ['b',1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+while (userInput!=""):
+    print(userInput)
+    currentPuzzle=Puzz8.Puzzle8(userInput.split(":")[0],userInput.split(":")[1])
+    if currentPuzzle.Solve():
+        print("puzzle was solvable:")
+        for state in currentPuzzle.ListOfStates:
+            print(state)
     else:
-        sys.exit("Puzzle Size check failed?! How?!")
-
-    fail = 0
-    for checkChar in checkCharList:
-        if checkChar not in checkCharList:
-            print("Puzzle is missing charcater "+str(checkChar))
-            fail = 1
-    if fail:
-        sys.exit()
+        print("puzzle was not solvable!")
+    if inputfilename=="none":
+        userInput = input("please enter a string in the for of 'SearchType:b,1,2,3,4,5,6,7,8':")
+    else:
+        userInput=inputfile.readline()
 
 #quit
 
