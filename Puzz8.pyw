@@ -2,10 +2,72 @@
 
 import sys
 
+class __Puzzle():
+    #initialize variables
+    data = [[0,0,0],[0,0,0],[0,0,0]]
+    bCoords = [-1,-1]
+    performanceScore = 0
+
+    #constructor
+    def __init__(self,puzzleIn : __Puzzle):
+        self.data = puzzleIn.data.copy()
+        self.bCoords = puzzleIn.bCoords.copy()
+        self.performanceScore = puzzleIn.performanceScore
+
+    def __init__(self,listIn):
+        if len(listIn)!=3:
+            raise Exception("Invalid list provided: has "+str(len(listIn))+" rows when only 3 are allowed") 
+        xCoord=0
+        for x in listIn:
+            if len(x)!=3:
+                raise Exception("Invalid list provided: row "+str(xCoord)+" has "+str(len(x))+" columns when only 3 are allowed") 
+            yCoord=0
+            for y in x:
+                self.data[xCoord][yCoord]=y
+                if y=='b':
+                    self.bCoords=[xCoord,yCoord]
+                yCoord +=1
+            xCoord +=1
+        #validate content
+        if self.bCoords.count(-1) != 0:
+             raise Exception("Invalid list provided: does not contain a 'b' character")
+        if self.data.count(1) != 1:
+             raise Exception("Invalid list provided: contains "+str(self.data.count(1))+" '1' characters when it should only have 1")
+        if self.data.count(2) != 1:
+             raise Exception("Invalid list provided: contains "+str(self.data.count(2))+" '2' characters when it should only have 1")
+        if self.data.count(3) != 1:
+             raise Exception("Invalid list provided: contains "+str(self.data.count(3))+" '3' characters when it should only have 1")
+        if self.data.count(4) != 1:
+             raise Exception("Invalid list provided: contains "+str(self.data.count(4))+" '4' characters when it should only have 1")
+        if self.data.count(5) != 1:
+             raise Exception("Invalid list provided: contains "+str(self.data.count(5))+" '5' characters when it should only have 1")
+        if self.data.count(6) != 1:
+             raise Exception("Invalid list provided: contains "+str(self.data.count(6))+" '6' characters when it should only have 1")
+        if self.data.count(7) != 1:
+             raise Exception("Invalid list provided: contains "+str(self.data.count(7))+" '7' characters when it should only have 1")
+        if self.data.count(8) != 1:
+             raise Exception("Invalid list provided: contains "+str(self.data.count(8))+" '8' characters when it should only have 1")
+
+        self.MeasurePerformance()
+
+    def __init__(self,stringIn):
+        stringElements=stringIn.split(",")
+        if len(stringElements)!=9:
+            raise Exception("Invalid string provided") 
+        xCoord=0
+        for x in listIn:
+            yCoord=0
+            for y in x:
+                self.data[xCoord][yCoord]=y
+                if y=='b':
+                    self.bCoords=[xCoord,yCoord]
+                yCoord +=1
+            xCoord +=1
+        self.MeasurePerformance()
 
 class Puzzle8():
     SearchType = ""
-    Puzzle = [[0,0,0],[0,0,0],[0,0,0]]
+    
     ListOfStates = [[[0,0,0],[0,0,0],[0,0,0]],[[0,0,0],[0,0,0],[0,0,0]]]
     SolveState=[[1,2,3],[4,5,6],[7,8,'b']]
 
