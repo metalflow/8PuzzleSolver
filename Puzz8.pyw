@@ -53,23 +53,54 @@ class __Puzzle():
     def __init__(self,stringIn):
         stringElements=stringIn.split(",")
         if len(stringElements)!=9:
-            raise Exception("Invalid string provided") 
-        xCoord=0
-        for x in listIn:
-            yCoord=0
-            for y in x:
-                self.data[xCoord][yCoord]=y
-                if y=='b':
-                    self.bCoords=[xCoord,yCoord]
-                yCoord +=1
-            xCoord +=1
+            raise Exception("Invalid string provided, must be of length 9") 
+        if stringElements.count(1) != 1:
+             raise Exception("Invalid list provided: contains "+str(self.data.count(1))+" '1' characters when it should only have 1")
+        if stringElements.count(2) != 1:
+             raise Exception("Invalid list provided: contains "+str(self.data.count(2))+" '2' characters when it should only have 1")
+        if stringElements.count(3) != 1:
+             raise Exception("Invalid list provided: contains "+str(self.data.count(3))+" '3' characters when it should only have 1")
+        if stringElements.count(4) != 1:
+             raise Exception("Invalid list provided: contains "+str(self.data.count(4))+" '4' characters when it should only have 1")
+        if stringElements.count(5) != 1:
+             raise Exception("Invalid list provided: contains "+str(self.data.count(5))+" '5' characters when it should only have 1")
+        if stringElements.count(6) != 1:
+             raise Exception("Invalid list provided: contains "+str(self.data.count(6))+" '6' characters when it should only have 1")
+        if stringElements.count(7) != 1:
+             raise Exception("Invalid list provided: contains "+str(self.data.count(7))+" '7' characters when it should only have 1")
+        if stringElements.count(8) != 1:
+             raise Exception("Invalid list provided: contains "+str(self.data.count(8))+" '8' characters when it should only have 1")
+        xCount=0
+        for x in stringIn:
+            self.data[xCount//3][xCount%3]=x
+            xCount +=1
         self.MeasurePerformance()
+
+    def Swap(self,x,y):
+        if x != self.bCoords[0] + 1 or x != self.bCoords[0] - 1:
+            return False
+        if y != self.bCoords[1] + 1 or y != self.bCoords[1] - 1:
+            return False
+        charToSwap = self.data[x][y]
+        self.data[bCoords[0]][bCoords[1]] = charToSwap
+        self.data[x][y] = 'b'
+        self.bCoords[0]=x
+        self.bCoords[1]=y
+        return True
+
+    def FindBCoords(self):
+        for x in range(len(self.data)):
+            for y in range(len(self.data[x])):
+                if self.data[x][y] == 'b':
+                    self.bCoords=[x,y]
+                    return [x,y]
+        sys.exit("no b was found in this puzzle! "+str(puzzleIn))
 
 class Puzzle8():
     SearchType = ""
-    
-    ListOfStates = [[[0,0,0],[0,0,0],[0,0,0]],[[0,0,0],[0,0,0],[0,0,0]]]
-    SolveState=[[1,2,3],[4,5,6],[7,8,'b']]
+    ListOfStates = []
+    SolveState=Puzzle([[1,2,3],[4,5,6],[7,8,'b']])
+    initialPuzzle=Puzzle([[1,2,3],[4,5,6],[7,8,'b']])
 
     def __init__(self,search,puzzleIn):
         self.SearchType = search
@@ -77,30 +108,18 @@ class Puzzle8():
 
     def __init__(self,search,puzzleString):
         self.SearchType = search
-        counter = 0
-        for thisChar in puzzleString.split(","):
-            #print("position:"+str(counter)+" is "+str(thisChar)+" and the x is "+str(counter//3)+" and the y is "+str(counter%3))
-            self.Puzzle[counter//3][counter%3]=thisChar
-            #print(self.Puzzle)
-            counter+=1
-        if counter!=9:
-            sys.exit("improper puzzle string of "+str(puzzleString)+" exiting.")
+        self.initialPuzzle=Puzzle(puzzleString)
+        #counter = 0
+        #for thisChar in puzzleString.split(","):
+        #    #print("position:"+str(counter)+" is "+str(thisChar)+" and the x is "+str(counter//3)+" and the y is "+str(counter%3))
+        #    self.Puzzle[counter//3][counter%3]=thisChar
+        #    #print(self.Puzzle)
+        #    counter+=1
+        #if counter!=9:
+        #    sys.exit("improper puzzle string of "+str(puzzleString)+" exiting.")
         #print(self.Puzzle)
 
-    def Swap(self,puzzleIn,x,y):
-        bCoords = self.FindBCoords(puzzleIn)
-        puzzleOut = puzzleIn.copy()
-        charToSwap = puzzleIn[x][y]
-        puzzleOut[bCoords[0]][bCoords[1]] = charToSwap
-        puzzleOut[x][y] = 'b'
-        return puzzleOut
-
-    def FindBCoords(self,puzzleIn):
-        for x in range(len(puzzleIn)):
-            for y in range(len(puzzleIn[x])):
-                if puzzleIn[x][y] == 'b':
-                    return [x,y]
-        sys.exit("no b was found in this puzzle! "+str(puzzleIn))
+    
 
     def Solve(self):
         #check to see if the initial configuration is the solved configuration
