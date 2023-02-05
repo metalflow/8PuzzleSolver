@@ -118,15 +118,14 @@ else:
 
 while (userInput!=""):
     print(userInput)
-    try: currentPuzzle=Puzz8.Puzzle8(userInput.split(":")[0],userInput.split(":")[1])
-    except Exception as e:
-        print(e)
-        print("skipping this puzzle")
+    currentPuzzle=Puzz8.Puzzle8(userInput.split(":")[0],userInput.split(":")[1])
+    if currentPuzzle.ListOfStates[0].inversionCount%2 !=0:
+        print("skipping this puzzle becasue it has an odd inversion score of:"+str(currentPuzzle.ListOfStates[0].inversionCount))
+        del currentPuzzle
         if inputfilename=="none":
             userInput = input("please enter a string in the for of 'SearchType:b,1,2,3,4,5,6,7,8':")
         else:
             userInput=inputfile.readline()
-        #del currentPuzzle
         continue
     if currentPuzzle.Solve():
         print("puzzle was solvable in "+str(len(currentPuzzle.ListOfStates))+" steps:")

@@ -53,9 +53,9 @@ class Puzzle:
         else:
             raise Exception("invalid parameter type of "+str(type(inVar))+"passed.  Please only pass strings or lists")
         self.ValidatePuzzle()
-        if self.inversionCount%2 != 0:
-            raise Exception("this is not a solvable puzzle because it has an odd number of inversions:"+str(self.inversionCount))
-        #self.MeasurePerformance()
+        #if self.inversionCount%2 != 0:
+        #    raise Exception("this is not a solvable puzzle because it has an odd number of inversions:"+str(self.inversionCount))
+        self.MeasurePerformance()
 
     def Swap(self,x,y):
         if x > self.bCoords[0] + 1 or x < self.bCoords[0] - 1:
@@ -112,9 +112,22 @@ class Puzzle:
                             self.inversionCount+=1
                 lastValue = x 
         return
+
     def MeasurePerformance(self):
         self.performanceScore=0
-        return 0
+        xCounter=0
+        yCounter=0
+        #calculate the manhatten distance
+        for x in self.data:
+            for y in x:
+                if y == 'b':
+                    distance = abs(2-xCounter) + abs(2-yCounter)
+                else:
+                    distance = abs((y//3)-xCounter) + abs((y%3)-yCounter)
+                self.performanceScore+=distance
+                yCounter+=1
+            xCounter+=1
+        return self.performanceScore
 
 class Puzzle8():
 
@@ -125,6 +138,8 @@ class Puzzle8():
     #def __del__(self):
     #    self.SearchType = ""
     #    self.ListOfStates.clear()
+    def GetPerformance(self,puzzle):
+        return puzzle.performanceScore
 
     def __init__(self,search,puzzleIn : Puzzle):
         self.ListOfStates = []
@@ -163,10 +178,69 @@ class Puzzle8():
                 #create a puzzle with the blank moved up one row
                 newPuzzle = Puzzle(self.ListOfStates[-1].data)
                 newPuzzle.Swap(self.ListOfStates[-1].bCoords[0] - 1,self.ListOfStates[-1].bCoords[1])
+                #newPuzzle.ValidatePuzzle()
                 #check to see if this puzzle already exists in ListOfStates
                 if self.isUsed(newPuzzle) == False:
                     self.frontierStates.append(newPuzzle)
                 del newPuzzle
+            if self.ListOfStates[-1].bCoords[0] + 1 < 3:
+                #create a puzzle with the blank moved up one row
+                newPuzzle = Puzzle(self.ListOfStates[-1].data)
+                newPuzzle.Swap(self.ListOfStates[-1].bCoords[0] + 1,self.ListOfStates[-1].bCoords[1])
+                #newPuzzle.ValidatePuzzle()
+                #check to see if this puzzle already exists in ListOfStates
+                if self.isUsed(newPuzzle) == False:
+                    self.frontierStates.append(newPuzzle)
+                del newPuzzle
+            if self.ListOfStates[-1].bCoords[1] - 1 >= 0:
+                #create a puzzle with the blank moved up one row
+                newPuzzle = Puzzle(self.ListOfStates[-1].data)
+                newPuzzle.Swap(self.ListOfStates[-1].bCoords[0],self.ListOfStates[-1].bCoords[1] -1)
+                #newPuzzle.ValidatePuzzle()
+                #check to see if this puzzle already exists in ListOfStates
+                if self.isUsed(newPuzzle) == False:
+                    self.frontierStates.append(newPuzzle)
+                del newPuzzle
+            if self.ListOfStates[-1].bCoords[1] + 1 < 3:
+                #create a puzzle with the blank moved up one row
+                newPuzzle = Puzzle(self.ListOfStates[-1].data)
+                newPuzzle.Swap(self.ListOfStates[-1].bCoords[0],self.ListOfStates[-1].bCoords[1] +1)
+                #newPuzzle.ValidatePuzzle()
+                #check to see if this puzzle already exists in ListOfStates
+                if self.isUsed(newPuzzle) == False:
+                    self.frontierStates.append(newPuzzle)
+                del newPuzzle
+        #sort the frontier nodes by performance score
+        self.frontierStates.sort(key=self.GetPerformance)
+        #order through the frontiers
+        for nextFrontier in range(len(self.frontierStates)):
+            if self.subSolve(self.frontierStates.pop()):
+                return True
+        #if none returned true, we failed
+        self.ListOfStates.pop()
+        return False
+
+    def subSolve(self,puzzleIn):
+        self.ListOfStates.append(puzzleIn)
+        print("current list of states:")
+        for existingState in self.ListOfStates:
+            print(existingState.data)
+        if str(self.ListOfStates[-1].data) == str(self.SolveState.data):
+            #we found our solution, return true
+            return True
+        else:
+            #add frontier nodes
+            if self.ListOfStates[-1].bCoords[0] - 1 >= 0:
+                #create a puzzle with the blank moved up one row
+                try:
+                    newPuzzle = Puzzle(self.ListOfStates[-1].data)
+                    newPuzzle.Swap(self.ListOfStates[-1].bCoords[0] - 1,self.ListOfStates[-1].bCoords[1])
+                    #check to see if this puzzle already exists in ListOfStates
+                    if self.isUsed(newPuzzle) == False:
+                        self.frontierStates.append(newPuzzle)
+                    del newPuzzle
+                except:
+                    print("did not add invalid state:")
             if self.ListOfStates[-1].bCoords[0] + 1 < 3:
                 #create a puzzle with the blank moved up one row
                 newPuzzle = Puzzle(self.ListOfStates[-1].data)
@@ -192,18 +266,13 @@ class Puzzle8():
                     self.frontierStates.append(newPuzzle)
                 del newPuzzle
         #sort the frontier nodes by performance score
-        self.frontierStates.sort(key=self.MeasurePerformance)
+        self.frontierStates.sort(key=self.GetPerformance)
         #order through the frontiers
-        for nextFrontier in self.frontierStates:
-            if subSolve(nextFrontier):
+        for nextFrontier in range(len(self.frontierStates)):
+            if self.subSolve(self.frontierStates.pop()):
                 return True
         #if none returned true, we failed
-        return False
-
-
-                
-
-    def subSolve(self,puzzleIn):
+        self.ListOfStates.pop()
         return False
 
     
