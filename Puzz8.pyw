@@ -3,12 +3,13 @@ import sys
 
 class Puzzle:
     #initialize variables
-    data = [[0,0,0],[0,0,0],[0,0,0]]
-    bCoords = [-1,-1]
-    performanceScore = 0
-    inversionCount=0
+    #data = [[0,0,0],[0,0,0],[0,0,0]]
+    #bCoords = [-1,-1]
+    #performanceScore = 0
+    #inversionCount=0
 
     def ProcessList(self,listIn):
+        self.data = [[0,0,0],[0,0,0],[0,0,0]]
         if len(listIn)!=3:
             raise Exception("Invalid list provided: has "+str(len(listIn))+" rows when only 3 are allowed") 
         xCoord=0
@@ -25,13 +26,14 @@ class Puzzle:
         return
 
     def ProcessString(self,stringIn):
+        self.data = [[0,0,0],[0,0,0],[0,0,0]]
         xCount=0
         for x in stringIn.split(','):
-            if x=='b':
-                self.bCoords=[xCount//3,xCount%3]
-                self.data[xCount//3][xCount%3]=x
-            else:
+            if str(x).find('b') == -1:
                 self.data[xCount//3][xCount%3]=int(x)
+            else:
+                self.bCoords=[xCount//3,xCount%3]
+                self.data[xCount//3][xCount%3]='b'
             xCount +=1
             
         return
@@ -43,6 +45,7 @@ class Puzzle:
         self.performanceScore = puzzleIn.performanceScore
 
     def __init__(self,inVar):
+        self.inversionCount = 0
         if type(inVar) == str:
             self.ProcessString(inVar)
         elif type(inVar) == list:
@@ -55,9 +58,9 @@ class Puzzle:
         #self.MeasurePerformance()
 
     def Swap(self,x,y):
-        if x != self.bCoords[0] + 1 or x != self.bCoords[0] - 1:
+        if x > self.bCoords[0] + 1 or x < self.bCoords[0] - 1:
             return False
-        if y != self.bCoords[1] + 1 or y != self.bCoords[1] - 1:
+        if y > self.bCoords[1] + 1 or y < self.bCoords[1] - 1:
             return False
         charToSwap = self.data[x][y]
         self.data[self.bCoords[0]][self.bCoords[1]] = charToSwap
@@ -108,118 +111,99 @@ class Puzzle:
                         if y != 'b' and x < y:
                             self.inversionCount+=1
                 lastValue = x 
+        return
+    def MeasurePerformance(self):
+        self.performanceScore=0
+        return 0
 
 class Puzzle8():
 
-    
-
-    SearchType = ""
-    ListOfStates = []
+    #SearchType = ""
+    #ListOfStates = []
     SolveState=Puzzle([[1,2,3],[4,5,6],[7,8,'b']])
-    initialPuzzle=Puzzle([[1,2,3],[4,5,6],[7,8,'b']])
 
-    def __init__(self,search,puzzleIn):
+    #def __del__(self):
+    #    self.SearchType = ""
+    #    self.ListOfStates.clear()
+
+    def __init__(self,search,puzzleIn : Puzzle):
+        self.ListOfStates = []
         self.SearchType = search
-        self.Puzzle = puzzleIn
+        self.ListOfStates.append(puzzleIn)
 
-    def __init__(self,search,puzzleString):
+    def __init__(self,search,puzzleString : str):
+        self.ListOfStates = []
         self.SearchType = search
-        self.initialPuzzle=Puzzle(puzzleString)
+        self.ListOfStates.append(Puzzle(puzzleString))
 
-    def Solve(self):
-        #check to see if the initial configuration is the solved configuration
-        #self.ListOfStates.clear()
-        self.ListOfStates[1]=self.Puzzle
-        print("initial list of states:")
+    def isUsed(self,newPuzzle : Puzzle):
         for existingState in self.ListOfStates:
-            print(str(existingState))
-        if str(self.ListOfStates[-1]) == str(self.SolveState):
-            return True
-        else:
-            #print(self.ListOfStates[-1])
-            bCoords = self.FindBCoords(self.ListOfStates[-1])
-            print("BCoords are:"+str(bCoords))
-        #check to see if you can move the blank down
-        if bCoords[0]+1<3:
-            if self.subSolve(self.Swap(self.ListOfStates[-1],bCoords[0]+1,bCoords[1])):
+            if str(newPuzzle.data) == str(existingState.data):
+                #this state has already been used
                 return True
-        #check to see if you can move the blank up
-        if bCoords[0]-1>=0:
-            if self.subSolve(self.Swap(self.ListOfStates[-1],bCoords[0]-1,bCoords[1])):
+        for existingFrontier in self.frontierStates:
+            if str(newPuzzle.data) == str(existingFrontier.data):
+                #this state has already been added to the frontier
                 return True
-        #check to see if you can move the blank left
-        if bCoords[1]+1<3:
-            if self.subSolve(self.Swap(self.ListOfStates[-1],bCoords[0],bCoords[1]+1)):
-                return True
-        #check to see if you can move the blank right
-        if bCoords[1]-1>=0:
-            if self.subSolve(self.Swap(self.ListOfStates[-1],bCoords[0],bCoords[1]-1)):
-                return True
-        #no solution was found
-        self.ListOfStates.clear()
         return False
 
-    def subSolve(self,puzzleIn):
+    def Solve(self):
+        #make list of frontier states
+        self.frontierStates = []
         #check to see if the initial configuration is the solved configuration
-        self.ListOfStates.append(puzzleIn)
-        print("current list of states:")
+        print("initial list of states:")
         for existingState in self.ListOfStates:
-            print(str(existingState))
-        if str(self.ListOfStates[-1]) == str(self.SolveState):
-            print("solved with current state:"+str(self.ListOfStates[-1]))
-            print("and solveState:"+str(self.SolveState))
+            print(existingState.data)
+        if str(self.ListOfStates[-1].data) == str(self.SolveState.data):
+            #we found our solution, return true
             return True
         else:
-            bCoords = self.FindBCoords(self.ListOfStates[-1])
-            print("BCoords are:"+str(bCoords))
-        #check to see if you can move the blank down
-        if bCoords[0]+1<3:
-            puzzleOut=self.Swap(self.ListOfStates[-1],bCoords[0]+1,bCoords[1])
-            quitflag=0
-            for existingState in self.ListOfStates:
-                print(str(existingState) + " compares to " + str(puzzleOut))
-                if str(existingState)==str(puzzleOut):
-                    quitFlag=1
-                    break
-            if quitFlag==0:
-                print("selected to move down")
-                return self.subSolve(puzzleOut)
-            else:
-                print("rejected to move down because state "+str(puzzleOut)+" already exists")
-        else:
-            print("rejected to move down")
-        #check to see if you can move the blank up
-        if bCoords[0]-1>=0:
-            puzzleOut=self.Swap(self.ListOfStates[-1],bCoords[0]-1,bCoords[1])
-            if self.ListOfStates.count(puzzleOut)==0:
-                print("selected to move up")
-                return self.subSolve(puzzleOut)
-            else:
-                print("rejected to move up because state "+str(puzzleOut)+" already exists")
-        else:
-            print("rejected to move up")
-        #check to see if you can move the blank right
-        if bCoords[1]+1<3:
-            puzzleOut=self.Swap(self.ListOfStates[-1],bCoords[0],bCoords[1]+1)
-            if self.ListOfStates.count(puzzleOut)==0:
-                print("selected to move right")
-                return self.subSolve(puzzleOut)
-            else:
-                print("rejected to move right because state "+str(puzzleOut)+" already exists")
-        else:
-            print("rejected to move right")
-        #check to see if you can move the blank left
-        if bCoords[1]-1>=0:
-            puzzleOut=self.Swap(self.ListOfStates[-1],bCoords[0],bCoords[1]-1)
-            if self.ListOfStates.count(puzzleOut)==0:
-                print("selected to move left")
-                return self.subSolve(puzzleOut)
-            else:
-                print("rejected to move left because state "+str(puzzleOut)+" already exists")
-        else:
-            print("rejected to move left")
-        #no solution was found
-        self.ListOfStates.pop()
+            #add frontier nodes
+            if self.ListOfStates[-1].bCoords[0] - 1 >= 0:
+                #create a puzzle with the blank moved up one row
+                newPuzzle = Puzzle(self.ListOfStates[-1].data)
+                newPuzzle.Swap(self.ListOfStates[-1].bCoords[0] - 1,self.ListOfStates[-1].bCoords[1])
+                #check to see if this puzzle already exists in ListOfStates
+                if self.isUsed(newPuzzle) == False:
+                    self.frontierStates.append(newPuzzle)
+                del newPuzzle
+            if self.ListOfStates[-1].bCoords[0] + 1 < 3:
+                #create a puzzle with the blank moved up one row
+                newPuzzle = Puzzle(self.ListOfStates[-1].data)
+                newPuzzle.Swap(self.ListOfStates[-1].bCoords[0] + 1,self.ListOfStates[-1].bCoords[1])
+                #check to see if this puzzle already exists in ListOfStates
+                if self.isUsed(newPuzzle) == False:
+                    self.frontierStates.append(newPuzzle)
+                del newPuzzle
+            if self.ListOfStates[-1].bCoords[1] - 1 >= 0:
+                #create a puzzle with the blank moved up one row
+                newPuzzle = Puzzle(self.ListOfStates[-1].data)
+                newPuzzle.Swap(self.ListOfStates[-1].bCoords[0],self.ListOfStates[-1].bCoords[1] -1)
+                #check to see if this puzzle already exists in ListOfStates
+                if self.isUsed(newPuzzle) == False:
+                    self.frontierStates.append(newPuzzle)
+                del newPuzzle
+            if self.ListOfStates[-1].bCoords[1] + 1 < 3:
+                #create a puzzle with the blank moved up one row
+                newPuzzle = Puzzle(self.ListOfStates[-1].data)
+                newPuzzle.Swap(self.ListOfStates[-1].bCoords[0],self.ListOfStates[-1].bCoords[1] +1)
+                #check to see if this puzzle already exists in ListOfStates
+                if self.isUsed(newPuzzle) == False:
+                    self.frontierStates.append(newPuzzle)
+                del newPuzzle
+        #sort the frontier nodes by performance score
+        self.frontierStates.sort(key=self.MeasurePerformance)
+        #order through the frontiers
+        for nextFrontier in self.frontierStates:
+            if subSolve(nextFrontier):
+                return True
+        #if none returned true, we failed
+        return False
+
+
+                
+
+    def subSolve(self,puzzleIn):
         return False
 
     

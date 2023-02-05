@@ -122,14 +122,19 @@ while (userInput!=""):
     except Exception as e:
         print(e)
         print("skipping this puzzle")
-        userInput=inputfile.readline()
+        if inputfilename=="none":
+            userInput = input("please enter a string in the for of 'SearchType:b,1,2,3,4,5,6,7,8':")
+        else:
+            userInput=inputfile.readline()
+        #del currentPuzzle
         continue
     if currentPuzzle.Solve():
-        print("puzzle was solvable:")
+        print("puzzle was solvable in "+str(len(currentPuzzle.ListOfStates))+" steps:")
         for state in currentPuzzle.ListOfStates:
-            print(state)
+            print(state.data)
     else:
         print("puzzle was not solvable!")
+    del currentPuzzle
     if inputfilename=="none":
         userInput = input("please enter a string in the for of 'SearchType:b,1,2,3,4,5,6,7,8':")
     else:
