@@ -67,6 +67,7 @@ class Puzzle:
         self.data[x][y] = 'b'
         self.bCoords[0]=x
         self.bCoords[1]=y
+        self.MeasurePerformance()
         return True
 
     def FindBCoords(self):
@@ -116,21 +117,22 @@ class Puzzle:
     def MeasurePerformance(self):
         self.performanceScore=0
         xCounter=0
-        yCounter=0
         #calculate the manhatten distance
         for x in self.data:
+            yCounter=0
             for y in x:
                 if y == 'b':
-                    distance = abs(2-xCounter) + abs(2-yCounter)
+                    distance = 0
+                    #distance = abs(2-xCounter) + abs(2-yCounter)
                 else:
-                    distance = abs((y//3)-xCounter) + abs((y%3)-yCounter)
+                    distance = abs(((y-1)//3)-xCounter) + abs(((y-1)%3)-yCounter)
                 self.performanceScore+=distance
                 yCounter+=1
             xCounter+=1
         return self.performanceScore
 
 class Puzzle8():
-
+    depth=0
     #SearchType = ""
     #ListOfStates = []
     SolveState=Puzzle([[1,2,3],[4,5,6],[7,8,'b']])
@@ -211,7 +213,7 @@ class Puzzle8():
                     self.frontierStates.append(newPuzzle)
                 del newPuzzle
         #sort the frontier nodes by performance score
-        self.frontierStates.sort(key=self.GetPerformance)
+        self.frontierStates.sort(reverse=True,key=self.GetPerformance)
         #order through the frontiers
         for nextFrontier in range(len(self.frontierStates)):
             if self.subSolve(self.frontierStates.pop()):
@@ -221,6 +223,10 @@ class Puzzle8():
         return False
 
     def subSolve(self,puzzleIn):
+        self.depth+=1
+        if self.depth>900:
+            return False
+        adjacentStates=[]
         self.ListOfStates.append(puzzleIn)
         print("current list of states:")
         for existingState in self.ListOfStates:
@@ -237,7 +243,10 @@ class Puzzle8():
                     newPuzzle.Swap(self.ListOfStates[-1].bCoords[0] - 1,self.ListOfStates[-1].bCoords[1])
                     #check to see if this puzzle already exists in ListOfStates
                     if self.isUsed(newPuzzle) == False:
+                        if self.SearchType=="A*":
+                            newPuzzle.performanceScore+=self.depth
                         self.frontierStates.append(newPuzzle)
+                        adjacentStates.append(newPuzzle)
                     del newPuzzle
                 except:
                     print("did not add invalid state:")
@@ -247,7 +256,10 @@ class Puzzle8():
                 newPuzzle.Swap(self.ListOfStates[-1].bCoords[0] + 1,self.ListOfStates[-1].bCoords[1])
                 #check to see if this puzzle already exists in ListOfStates
                 if self.isUsed(newPuzzle) == False:
+                    if self.SearchType=="A*":
+                        newPuzzle.performanceScore+=self.depth
                     self.frontierStates.append(newPuzzle)
+                    adjacentStates.append(newPuzzle)
                 del newPuzzle
             if self.ListOfStates[-1].bCoords[1] - 1 >= 0:
                 #create a puzzle with the blank moved up one row
@@ -255,7 +267,10 @@ class Puzzle8():
                 newPuzzle.Swap(self.ListOfStates[-1].bCoords[0],self.ListOfStates[-1].bCoords[1] -1)
                 #check to see if this puzzle already exists in ListOfStates
                 if self.isUsed(newPuzzle) == False:
+                    if self.SearchType=="A*":
+                        newPuzzle.performanceScore+=self.depth
                     self.frontierStates.append(newPuzzle)
+                    adjacentStates.append(newPuzzle)
                 del newPuzzle
             if self.ListOfStates[-1].bCoords[1] + 1 < 3:
                 #create a puzzle with the blank moved up one row
@@ -263,16 +278,23 @@ class Puzzle8():
                 newPuzzle.Swap(self.ListOfStates[-1].bCoords[0],self.ListOfStates[-1].bCoords[1] +1)
                 #check to see if this puzzle already exists in ListOfStates
                 if self.isUsed(newPuzzle) == False:
+                    if self.SearchType=="A*":
+                        newPuzzle.performanceScore+=self.depth
                     self.frontierStates.append(newPuzzle)
+                    adjacentStates.append(newPuzzle)
                 del newPuzzle
         #sort the frontier nodes by performance score
-        self.frontierStates.sort(key=self.GetPerformance)
+        adjacentStates.sort(reverse=True,key=self.GetPerformance)
         #order through the frontiers
-        for nextFrontier in range(len(self.frontierStates)):
-            if self.subSolve(self.frontierStates.pop()):
+        for nextState in range(len(adjacentStates)):
+            stateToCheck=adjacentStates.pop()
+            if self.subSolve(stateToCheck):
                 return True
+            else:
+                self.frontierStates.pop(self.frontierStates.index(stateToCheck))
         #if none returned true, we failed
         self.ListOfStates.pop()
+        self.depth-=1
         return False
 
     
