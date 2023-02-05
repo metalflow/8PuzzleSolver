@@ -1,9 +1,5 @@
 #imports
-
-from re import X
-import string
 import sys
-from tokenize import String
 
 class Puzzle:
     #initialize variables
@@ -33,7 +29,7 @@ class Puzzle:
         for x in stringIn.split(','):
             if x=='b':
                 self.bCoords=[xCount//3,xCount%3]
-                self.data[xCount//3][xCount%3]=X
+                self.data[xCount//3][xCount%3]=x
             else:
                 self.data[xCount//3][xCount%3]=int(x)
             xCount +=1
@@ -64,7 +60,7 @@ class Puzzle:
         if y != self.bCoords[1] + 1 or y != self.bCoords[1] - 1:
             return False
         charToSwap = self.data[x][y]
-        self.data[bCoords[0]][bCoords[1]] = charToSwap
+        self.data[self.bCoords[0]][self.bCoords[1]] = charToSwap
         self.data[x][y] = 'b'
         self.bCoords[0]=x
         self.bCoords[1]=y
@@ -104,13 +100,14 @@ class Puzzle:
         if listToCheck.count(8) != 1:
                 raise Exception("Invalid list provided: contains "+str(listToCheck.count(8))+" '8' characters when it should only have 1")
         for x in listToCheck:
-            if x != 'b' and x < lastValue:
-                self.inversionCount+=1
-                #also check to see if there are any previous inversions
-                for y in listToCheck[0:listToCheck.index(x)]:
-                    if y != 'b' and x < y:
-                        self.inversionCount+=1
-            lastValue = x 
+            if x != 'b':
+                if x < lastValue:
+                    self.inversionCount+=1
+                    #also check to see if there are any previous inversions
+                    for y in listToCheck[0:listToCheck.index(x)-1]:
+                        if y != 'b' and x < y:
+                            self.inversionCount+=1
+                lastValue = x 
 
 class Puzzle8():
 
@@ -128,17 +125,6 @@ class Puzzle8():
     def __init__(self,search,puzzleString):
         self.SearchType = search
         self.initialPuzzle=Puzzle(puzzleString)
-        #counter = 0
-        #for thisChar in puzzleString.split(","):
-        #    #print("position:"+str(counter)+" is "+str(thisChar)+" and the x is "+str(counter//3)+" and the y is "+str(counter%3))
-        #    self.Puzzle[counter//3][counter%3]=thisChar
-        #    #print(self.Puzzle)
-        #    counter+=1
-        #if counter!=9:
-        #    sys.exit("improper puzzle string of "+str(puzzleString)+" exiting.")
-        #print(self.Puzzle)
-
-    
 
     def Solve(self):
         #check to see if the initial configuration is the solved configuration
@@ -148,7 +134,7 @@ class Puzzle8():
         for existingState in self.ListOfStates:
             print(str(existingState))
         if str(self.ListOfStates[-1]) == str(self.SolveState):
-            return TRUE
+            return True
         else:
             #print(self.ListOfStates[-1])
             bCoords = self.FindBCoords(self.ListOfStates[-1])

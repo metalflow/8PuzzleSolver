@@ -118,7 +118,12 @@ else:
 
 while (userInput!=""):
     print(userInput)
-    currentPuzzle=Puzz8.Puzzle8(userInput.split(":")[0],userInput.split(":")[1])
+    try: currentPuzzle=Puzz8.Puzzle8(userInput.split(":")[0],userInput.split(":")[1])
+    except Exception as e:
+        print(e)
+        print("skipping this puzzle")
+        userInput=inputfile.readline()
+        continue
     if currentPuzzle.Solve():
         print("puzzle was solvable:")
         for state in currentPuzzle.ListOfStates:
