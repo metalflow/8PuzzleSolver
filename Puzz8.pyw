@@ -118,20 +118,26 @@ class Puzzle:
 
     def MeasurePerformance(self):
         self.performanceScore=0
+        self.badTilePerformanceScore=0
+        self.myPerformanceScore=0
         xCounter=0
+        tileCounter=0
         #calculate the manhatten distance
         for x in self.data:
             yCounter=0
             for y in x:
+                tileCounter+=1
                 if y == 'b':
                     distance = 0
                     #distance = abs(2-xCounter) + abs(2-yCounter)
                 else:
                     distance = abs(((y-1)//3)-xCounter) + abs(((y-1)%3)-yCounter)
+                    if y != tileCounter:
+                        self.badTilePerformanceScore+=1
                 self.performanceScore+=distance
                 yCounter+=1
             xCounter+=1
-        return self.performanceScore
+        return
 
 class Puzzle8():
     
@@ -144,11 +150,19 @@ class Puzzle8():
     #    self.SearchType = ""
     #    self.ListOfStates.clear()
     def GetPerformance(self,puzzle):
-        return puzzle.performanceScore
+        if self.perfType=="manhatten":
+            return puzzle.performanceScore
+        elif self.perfType=="badTile":
+            return puzzle.badTilePerformanceScore
+        elif self.perfType=="myPerf":
+            return puzzle.myPerformanceScore
+        else:
+            return 0
 
     def __init__(self,search,puzzleIn : Puzzle):
         self.ListOfStates = []
         self.SearchType = search
+        self.perfType = "manhatten"
         self.ListOfStates.append(puzzleIn)
         #make list of frontier states
         self.frontierStates = []
@@ -156,9 +170,16 @@ class Puzzle8():
     def __init__(self,search,puzzleString : str):
         self.ListOfStates = []
         self.SearchType = search
+        self.perfType = "manhatten"
         self.ListOfStates.append(Puzzle(puzzleString))
         #make list of frontier states
         self.frontierStates = []
+
+    def reset(self):
+        #initalPuzzle = self.ListOfStates[0]
+        self.ListOfStates.clear
+        #self.ListOfStates.append(initalPuzzle)
+        self.frontierStates.clear
 
     def isUsed(self,newPuzzle : Puzzle):
         for existingState in self.ListOfStates:
@@ -363,7 +384,7 @@ class Puzzle8():
         #sort the frontier nodes by performance score
         self.frontierStates.sort(reverse=True,key=self.GetPerformance)
         #order through the frontiers
-        for nextFrontier in range(len(self.frontierStates)):
+        while len(self.frontierStates)>0:
             if self.AStarSubSolve(self.frontierStates.pop()):
                 reportableStates = []
                 backtrackPuzzle = self.ListOfStates[-1]
@@ -376,6 +397,10 @@ class Puzzle8():
         return False
 
     def AStarSubSolve(self,puzzleIn):
+        self.depth+=1
+        if self.depth>900:
+            print("hit depth 900, rejecting for safety")
+            return False
         self.ListOfStates.append(puzzleIn)
         if str(self.ListOfStates[-1].data) == str(self.SolveState.data):
             #we found our solution, return true
@@ -425,7 +450,7 @@ class Puzzle8():
         #sort the frontier nodes by performance score
         self.frontierStates.sort(reverse=True,key=self.GetPerformance)
         #order through the frontiers
-        for nextFrontier in range(len(self.frontierStates)):
+        while len(self.frontierStates) > 0:
             if self.AStarSubSolve(self.frontierStates.pop()):
                 return True
         #if none returned true, we failed

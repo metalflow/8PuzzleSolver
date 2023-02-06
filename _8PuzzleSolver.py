@@ -124,6 +124,28 @@ while (userInput!=""):
         if currentPuzzle.ListOfStates[0].inversionCount%2 !=0:
             outputfile.write("skipping this puzzle becasue it has an odd inversion score of:"+str(currentPuzzle.ListOfStates[0].inversionCount)+"\n")
         elif currentPuzzle.SearchType == "best-first":
+            outputfile.write("manhatten distance hueristic:\n")
+            currentPuzzle.perfType = "manhatten"
+            if currentPuzzle.BestFirstSolve():
+                outputfile.write("puzzle was solvable in "+str(len(currentPuzzle.ListOfStates))+" steps:\n")
+                for state in currentPuzzle.ListOfStates:
+                    outputfile.writelines(str(state.data)+"\n")
+            else:
+                outputfile.write("puzzle was not solvable!\n")
+            outputfile.write("badTile hueristic:\n")
+            del currentPuzzle
+            currentPuzzle=Puzz8.Puzzle8(userInput.split(":")[0],userInput.split(":")[1])
+            currentPuzzle.perfType = "badTile"
+            if currentPuzzle.BestFirstSolve():
+                outputfile.write("puzzle was solvable in "+str(len(currentPuzzle.ListOfStates))+" steps:\n")
+                for state in currentPuzzle.ListOfStates:
+                    outputfile.writelines(str(state.data)+"\n")
+            else:
+                outputfile.write("puzzle was not solvable!\n")
+            outputfile.write("my hueristic:\n")
+            del currentPuzzle
+            currentPuzzle=Puzz8.Puzzle8(userInput.split(":")[0],userInput.split(":")[1])
+            currentPuzzle.perfType = "myPerf"
             if currentPuzzle.BestFirstSolve():
                 outputfile.write("puzzle was solvable in "+str(len(currentPuzzle.ListOfStates))+" steps:\n")
                 for state in currentPuzzle.ListOfStates:
@@ -131,10 +153,31 @@ while (userInput!=""):
             else:
                 outputfile.write("puzzle was not solvable!\n")
         elif currentPuzzle.SearchType == "A*":
+            currentPuzzle.perfType = "manhatten"
             if currentPuzzle.AStarSolve():
                 outputfile.write("puzzle was solvable in "+str(len(currentPuzzle.ListOfStates))+" steps:\n")
                 for state in currentPuzzle.ListOfStates:
-                    outputfile.write(str(state.data)+"\n")
+                    outputfile.writelines(str(state.data)+"\n")
+            else:
+                outputfile.write("puzzle was not solvable!\n")
+            outputfile.write("badTile hueristic:\n")
+            del currentPuzzle
+            currentPuzzle=Puzz8.Puzzle8(userInput.split(":")[0],userInput.split(":")[1])
+            currentPuzzle.perfType = "badTile"
+            if currentPuzzle.AStarSolve():
+                outputfile.write("puzzle was solvable in "+str(len(currentPuzzle.ListOfStates))+" steps:\n")
+                for state in currentPuzzle.ListOfStates:
+                    outputfile.writelines(str(state.data)+"\n")
+            else:
+                outputfile.write("puzzle was not solvable!\n")
+            outputfile.write("my hueristic:\n")
+            del currentPuzzle
+            currentPuzzle=Puzz8.Puzzle8(userInput.split(":")[0],userInput.split(":")[1])
+            currentPuzzle.perfType = "myPerf"
+            if currentPuzzle.AStarSolve():
+                outputfile.write("puzzle was solvable in "+str(len(currentPuzzle.ListOfStates))+" steps:\n")
+                for state in currentPuzzle.ListOfStates:
+                    outputfile.writelines(str(state.data)+"\n")
             else:
                 outputfile.write("puzzle was not solvable!\n")
         else:
