@@ -119,20 +119,46 @@ else:
 while (userInput!=""):
     print(userInput)
     currentPuzzle=Puzz8.Puzzle8(userInput.split(":")[0],userInput.split(":")[1])
-    if currentPuzzle.ListOfStates[0].inversionCount%2 !=0:
-        print("skipping this puzzle becasue it has an odd inversion score of:"+str(currentPuzzle.ListOfStates[0].inversionCount))
-        del currentPuzzle
-        if inputfilename=="none":
-            userInput = input("please enter a string in the for of 'SearchType:b,1,2,3,4,5,6,7,8':")
+    if outputfilename!="":
+        outputfile.write("current puzzle:"+str(currentPuzzle.ListOfStates[0].data)+" using searchtype "+str(currentPuzzle.SearchType)+"\n")
+        if currentPuzzle.ListOfStates[0].inversionCount%2 !=0:
+            outputfile.write("skipping this puzzle becasue it has an odd inversion score of:"+str(currentPuzzle.ListOfStates[0].inversionCount)+"\n")
+        elif currentPuzzle.SearchType == "best-first":
+            if currentPuzzle.BestFirstSolve():
+                outputfile.write("puzzle was solvable in "+str(len(currentPuzzle.ListOfStates))+" steps:\n")
+                for state in currentPuzzle.ListOfStates:
+                    outputfile.writelines(str(state.data)+"\n")
+            else:
+                outputfile.write("puzzle was not solvable!\n")
+        elif currentPuzzle.SearchType == "A*":
+            if currentPuzzle.AStarSolve():
+                outputfile.write("puzzle was solvable in "+str(len(currentPuzzle.ListOfStates))+" steps:\n")
+                for state in currentPuzzle.ListOfStates:
+                    outputfile.write(str(state.data)+"\n")
+            else:
+                outputfile.write("puzzle was not solvable!\n")
         else:
-            userInput=inputfile.readline()
-        continue
-    if currentPuzzle.Solve():
-        print("puzzle was solvable in "+str(len(currentPuzzle.ListOfStates))+" steps:")
-        for state in currentPuzzle.ListOfStates:
-            print(state.data)
+            outputfile.write("skipping this puzzle becasue it has an invalid search type of:"+str(currentPuzzle.SearchType)+"\n")
     else:
-        print("puzzle was not solvable!")
+        print("current puzzle:"+str(currentPuzzle.ListOfStates[0].data)+" using serachtype "+str(currentPuzzle.SearchType))
+        if currentPuzzle.ListOfStates[0].inversionCount%2 !=0:
+             print("skipping this puzzle becasue it has an odd inversion score of:"+str(currentPuzzle.ListOfStates[0].inversionCount)+"\n")
+        elif currentPuzzle.SearchType == "best-first":
+            if currentPuzzle.BestFirstSolve():
+                print("puzzle was solvable in "+str(len(currentPuzzle.ListOfStates))+" steps:\n")
+                for state in currentPuzzle.ListOfStates:
+                    outputfile.writelines(str(state.data)+"\n")
+            else:
+                 print("puzzle was not solvable!\n")
+        elif currentPuzzle.SearchType == "A*":
+            if currentPuzzle.AStarSolve():
+                print("puzzle was solvable in "+str(len(currentPuzzle.ListOfStates))+" steps:\n")
+                for state in currentPuzzle.ListOfStates:
+                     print(str(state.data)+"\n")
+            else:
+                 print("puzzle was not solvable!\n")
+        else:
+             print("skipping this puzzle becasue it has an invalid search type of:"+str(currentPuzzle.SearchType)+"\n")
     del currentPuzzle
     if inputfilename=="none":
         userInput = input("please enter a string in the for of 'SearchType:b,1,2,3,4,5,6,7,8':")

@@ -43,6 +43,7 @@ class Puzzle:
         self.data = puzzleIn.data.copy()
         self.bCoords = puzzleIn.bCoords.copy()
         self.performanceScore = puzzleIn.performanceScore
+        self.parent=""
 
     def __init__(self,inVar):
         self.inversionCount = 0
@@ -56,6 +57,7 @@ class Puzzle:
         #if self.inversionCount%2 != 0:
         #    raise Exception("this is not a solvable puzzle because it has an odd number of inversions:"+str(self.inversionCount))
         self.MeasurePerformance()
+        self.parent=""
 
     def Swap(self,x,y):
         if x > self.bCoords[0] + 1 or x < self.bCoords[0] - 1:
@@ -132,10 +134,11 @@ class Puzzle:
         return self.performanceScore
 
 class Puzzle8():
-    depth=0
+    
     #SearchType = ""
     #ListOfStates = []
     SolveState=Puzzle([[1,2,3],[4,5,6],[7,8,'b']])
+    #frontierStates = []
 
     #def __del__(self):
     #    self.SearchType = ""
@@ -147,30 +150,39 @@ class Puzzle8():
         self.ListOfStates = []
         self.SearchType = search
         self.ListOfStates.append(puzzleIn)
+        #make list of frontier states
+        self.frontierStates = []
 
     def __init__(self,search,puzzleString : str):
         self.ListOfStates = []
         self.SearchType = search
         self.ListOfStates.append(Puzzle(puzzleString))
+        #make list of frontier states
+        self.frontierStates = []
 
     def isUsed(self,newPuzzle : Puzzle):
         for existingState in self.ListOfStates:
             if str(newPuzzle.data) == str(existingState.data):
+                #check to see if newPuzzle has a lower performance score than existing puzzle
+                if newPuzzle.performanceScore < existingState.performanceScore:
+                    existingState = newPuzzle
                 #this state has already been used
                 return True
         for existingFrontier in self.frontierStates:
             if str(newPuzzle.data) == str(existingFrontier.data):
+                #check to see if newPuzzle has a lower performance score than existing puzzle
+                if newPuzzle.performanceScore < existingFrontier.performanceScore:
+                    existingState = newPuzzle
                 #this state has already been added to the frontier
                 return True
         return False
 
-    def Solve(self):
-        #make list of frontier states
-        self.frontierStates = []
+    def BestFirstSolve(self):
+        self.depth=0
         #check to see if the initial configuration is the solved configuration
-        print("initial list of states:")
-        for existingState in self.ListOfStates:
-            print(existingState.data)
+        #print("initial list of states:")
+        #for existingState in self.ListOfStates:
+        #    print(existingState.data)
         if str(self.ListOfStates[-1].data) == str(self.SolveState.data):
             #we found our solution, return true
             return True
@@ -216,21 +228,22 @@ class Puzzle8():
         self.frontierStates.sort(reverse=True,key=self.GetPerformance)
         #order through the frontiers
         for nextFrontier in range(len(self.frontierStates)):
-            if self.subSolve(self.frontierStates.pop()):
+            if self.BestFirstSubSolve(self.frontierStates.pop()):
                 return True
         #if none returned true, we failed
         self.ListOfStates.pop()
         return False
 
-    def subSolve(self,puzzleIn):
+    def BestFirstSubSolve(self,puzzleIn):
         self.depth+=1
         if self.depth>900:
+            print("hit depth 900, rejecting for safety")
             return False
         adjacentStates=[]
         self.ListOfStates.append(puzzleIn)
-        print("current list of states:")
-        for existingState in self.ListOfStates:
-            print(existingState.data)
+        #print("current list of states:")
+        #for existingState in self.ListOfStates:
+        #    print(existingState.data)
         if str(self.ListOfStates[-1].data) == str(self.SolveState.data):
             #we found our solution, return true
             return True
@@ -283,12 +296,14 @@ class Puzzle8():
                     self.frontierStates.append(newPuzzle)
                     adjacentStates.append(newPuzzle)
                 del newPuzzle
-        #sort the frontier nodes by performance score
+        #sort the adjacent nodes by performance score
         adjacentStates.sort(reverse=True,key=self.GetPerformance)
+        #sort the frontier nodes by performance score
+        self.frontierStates.sort(reverse=True,key=self.GetPerformance)
         #order through the frontiers
         for nextState in range(len(adjacentStates)):
             stateToCheck=adjacentStates.pop()
-            if self.subSolve(stateToCheck):
+            if self.BestFirstSubSolve(stateToCheck):
                 return True
             else:
                 self.frontierStates.pop(self.frontierStates.index(stateToCheck))
@@ -297,4 +312,121 @@ class Puzzle8():
         self.depth-=1
         return False
 
-    
+    def AStarSolve(self):
+        self.depth=0
+        self.ListOfStates[-1].parent=""
+        if str(self.ListOfStates[-1].data) == str(self.SolveState.data):
+            #we found our solution, return true
+            return True
+        else:
+            #add frontier nodes
+            if self.ListOfStates[-1].bCoords[0] - 1 >= 0:
+                #create a puzzle with the blank moved up one row
+                newPuzzle = Puzzle(self.ListOfStates[-1].data)
+                newPuzzle.Swap(self.ListOfStates[-1].bCoords[0] - 1,self.ListOfStates[-1].bCoords[1])
+                newPuzzle.parent = self.ListOfStates[-1]
+                #newPuzzle.ValidatePuzzle()
+                #check to see if this puzzle already exists in ListOfStates
+                if self.isUsed(newPuzzle) == False:
+                    self.frontierStates.append(newPuzzle)
+                del newPuzzle
+            if self.ListOfStates[-1].bCoords[0] + 1 < 3:
+                #create a puzzle with the blank moved up one row
+                newPuzzle = Puzzle(self.ListOfStates[-1].data)
+                newPuzzle.Swap(self.ListOfStates[-1].bCoords[0] + 1,self.ListOfStates[-1].bCoords[1])
+                newPuzzle.parent = self.ListOfStates[-1]
+                #newPuzzle.ValidatePuzzle()
+                #check to see if this puzzle already exists in ListOfStates
+                if self.isUsed(newPuzzle) == False:
+                    self.frontierStates.append(newPuzzle)
+                del newPuzzle
+            if self.ListOfStates[-1].bCoords[1] - 1 >= 0:
+                #create a puzzle with the blank moved up one row
+                newPuzzle = Puzzle(self.ListOfStates[-1].data)
+                newPuzzle.Swap(self.ListOfStates[-1].bCoords[0],self.ListOfStates[-1].bCoords[1] -1)
+                newPuzzle.parent = self.ListOfStates[-1]
+                #newPuzzle.ValidatePuzzle()
+                #check to see if this puzzle already exists in ListOfStates
+                if self.isUsed(newPuzzle) == False:
+                    self.frontierStates.append(newPuzzle)
+                del newPuzzle
+            if self.ListOfStates[-1].bCoords[1] + 1 < 3:
+                #create a puzzle with the blank moved up one row
+                newPuzzle = Puzzle(self.ListOfStates[-1].data)
+                newPuzzle.Swap(self.ListOfStates[-1].bCoords[0],self.ListOfStates[-1].bCoords[1] +1)
+                newPuzzle.parent = self.ListOfStates[-1]
+                #newPuzzle.ValidatePuzzle()
+                #check to see if this puzzle already exists in ListOfStates
+                if self.isUsed(newPuzzle) == False:
+                    self.frontierStates.append(newPuzzle)
+                del newPuzzle
+        #sort the frontier nodes by performance score
+        self.frontierStates.sort(reverse=True,key=self.GetPerformance)
+        #order through the frontiers
+        for nextFrontier in range(len(self.frontierStates)):
+            if self.AStarSubSolve(self.frontierStates.pop()):
+                reportableStates = []
+                backtrackPuzzle = self.ListOfStates[-1]
+                while backtrackPuzzle.parent != "":
+                    reportableStates.insert(0,backtrackPuzzle)
+                    backtrackPuzzle = backtrackPuzzle.parent
+                self.ListOfStates = reportableStates
+                return True
+        #if none returned true, we failed
+        return False
+
+    def AStarSubSolve(self,puzzleIn):
+        self.ListOfStates.append(puzzleIn)
+        if str(self.ListOfStates[-1].data) == str(self.SolveState.data):
+            #we found our solution, return true
+            return True
+        else:
+            #add frontier nodes
+            if self.ListOfStates[-1].bCoords[0] - 1 >= 0:
+                #create a puzzle with the blank moved up one row
+                newPuzzle = Puzzle(self.ListOfStates[-1].data)
+                newPuzzle.Swap(self.ListOfStates[-1].bCoords[0] - 1,self.ListOfStates[-1].bCoords[1])
+                newPuzzle.parent = self.ListOfStates[-1]
+                #newPuzzle.ValidatePuzzle()
+                #check to see if this puzzle already exists in ListOfStates
+                if self.isUsed(newPuzzle) == False:
+                    self.frontierStates.append(newPuzzle)
+                del newPuzzle
+            if self.ListOfStates[-1].bCoords[0] + 1 < 3:
+                #create a puzzle with the blank moved up one row
+                newPuzzle = Puzzle(self.ListOfStates[-1].data)
+                newPuzzle.Swap(self.ListOfStates[-1].bCoords[0] + 1,self.ListOfStates[-1].bCoords[1])
+                newPuzzle.parent = self.ListOfStates[-1]
+                #newPuzzle.ValidatePuzzle()
+                #check to see if this puzzle already exists in ListOfStates
+                if self.isUsed(newPuzzle) == False:
+                    self.frontierStates.append(newPuzzle)
+                del newPuzzle
+            if self.ListOfStates[-1].bCoords[1] - 1 >= 0:
+                #create a puzzle with the blank moved up one row
+                newPuzzle = Puzzle(self.ListOfStates[-1].data)
+                newPuzzle.Swap(self.ListOfStates[-1].bCoords[0],self.ListOfStates[-1].bCoords[1] -1)
+                newPuzzle.parent = self.ListOfStates[-1]
+                #newPuzzle.ValidatePuzzle()
+                #check to see if this puzzle already exists in ListOfStates
+                if self.isUsed(newPuzzle) == False:
+                    self.frontierStates.append(newPuzzle)
+                del newPuzzle
+            if self.ListOfStates[-1].bCoords[1] + 1 < 3:
+                #create a puzzle with the blank moved up one row
+                newPuzzle = Puzzle(self.ListOfStates[-1].data)
+                newPuzzle.Swap(self.ListOfStates[-1].bCoords[0],self.ListOfStates[-1].bCoords[1] +1)
+                newPuzzle.parent = self.ListOfStates[-1]
+                #newPuzzle.ValidatePuzzle()
+                #check to see if this puzzle already exists in ListOfStates
+                if self.isUsed(newPuzzle) == False:
+                    self.frontierStates.append(newPuzzle)
+                del newPuzzle
+        #sort the frontier nodes by performance score
+        self.frontierStates.sort(reverse=True,key=self.GetPerformance)
+        #order through the frontiers
+        for nextFrontier in range(len(self.frontierStates)):
+            if self.AStarSubSolve(self.frontierStates.pop()):
+                return True
+        #if none returned true, we failed
+        return False
